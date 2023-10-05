@@ -12,8 +12,7 @@ fn main() {
     }
 
     if numbers.len() < 3 {
-        eprintln!("Usage: modexp <x> <y> <m>");
-        std::process::exit(1);
+        error();
     }
     let x = numbers[0];
 
@@ -24,24 +23,41 @@ fn main() {
     modexp(x, y, m);
 }
 
-fn modexp(mut x: u64, mut y: u64, m: u64) -> u64 {
-    if m == 1 {
+fn modexp(x: u64, y: u64, m: u64) -> u64 {
+    let mut base: u128 = u128::from(x);
+
+    let mut exp: u128 = u128::from(y);
+
+    let md: u128 = u128::from(m);
+
+    if md == 1 {
         return 0;
     }
 
-    let mut z: u64 = 1;
+    let mut z: u128 = 1;
 
-    while y > 0 {
-        if y % 2 == 1 {
-            z = (z*x) % m;
+    while exp > 0 {
+        if exp % 2 == 1 {
+            z = (z*base) % md;
         }
-        y /= 2;
-        x =  x.pow(2)% m;
+        exp /= 2;
+        base =  base.pow(2)% md;
 
     }
     println!("The result is {} ", z);
-    z
+    u64::try_from(z).unwrap()
 }
+
+/// Print a usage error message and exit.
+fn error() -> ! {
+    eprintln!("modexp: usage: modexp <x> <y> <m>");
+    std::process::exit(1);
+}
+
+/// Parse the given string as a `u64`.
+//fn parsenum(s: &str) -> u64 {
+   // s.parse().unwrap_or_else(|_| error())
+//}
 
 #[test]
 fn test_modexp() {

@@ -1,3 +1,7 @@
+//! Command-line modular exponentation tool
+//!
+//! Lance Miller 2023
+
 use std::str::FromStr;
 use std::env;
 
@@ -23,6 +27,7 @@ fn main() {
     modexp(x, y, m);
 }
 
+///Calculate the exponential modulo and print/return it
 fn modexp(x: u64, y: u64, m: u64) -> u64 {
     let mut base: u128 = u128::from(x);
 
@@ -54,11 +59,7 @@ fn error() -> ! {
     std::process::exit(1);
 }
 
-/// Parse the given string as a `u64`.
-//fn parsenum(s: &str) -> u64 {
-   // s.parse().unwrap_or_else(|_| error())
-//}
-
+///test for u64 overflow and other things
 #[test]
 fn test_modexp() {
     // Largest prime less than 2**64.

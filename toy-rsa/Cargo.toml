@@ -7,7 +7,3 @@ edition = "2021"
 
 [dependencies.toy_rsa_lib]
 git = "http://github.com/pdx-cs-rust/toy-rsa-lib"
-
-[[bin]]
-name = "lib"
-path = "src/lib.rs"

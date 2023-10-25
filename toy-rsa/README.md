@@ -11,3 +11,5 @@ otherwise I would have taken you up on some help here.
 
 Had some small issues with clippy warnings vis-a-vis the library crate and a main function. 
 
+Well, had a pretty silly error of thinking that I could multiply two u32's together and then convert to u64 afterwards. The overflow error i was getting could have been more specific i feel like, but maybe im just bitter. got it all working now. 
+

@@ -68,7 +68,6 @@ impl Board {
     /// ```
     /// let mut board = Board::new(5, 5);
     /// board.chomper(3, 3);
-    /// // This will remove all squares in rows 3 to 5 and columns 3 to 5.
     /// ```    
     pub fn chomper(&mut self, row: usize, col: usize) {
         let mut squares_to_remove = HashSet::new();
@@ -96,7 +95,7 @@ impl Board {
 /// # Examples
 ///
 /// ```
-/// let mut board = Board::new(5, 5); // Assuming a constructor `new` for Board
+/// let mut board = Board::new(5, 5);
 /// if let Some((row, col)) = board.winning_move() {
 ///     println!("Winning move: ({}, {})", row, col);
 /// } else {

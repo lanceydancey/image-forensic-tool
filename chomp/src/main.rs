@@ -1,6 +1,5 @@
 use std::io;
 
-// Import the Board struct from your library crate.
 use chomp::Board;
 use std::thread;
 use std::time;
@@ -8,25 +7,17 @@ use std::time;
 fn main() {
     println!("Welcome to the Chomp game!");
 
-    // Ask the user for the board size.
     let (rows, cols) = get_board_size_from_user();
-
-    // Create a new Board instance based on user input.
     let mut board: Board = Board::new(rows, cols);
     let mut player_turn = true;
 
-    // You can now use the 'board' instance to play the game.
-    // Implement the game logic here.
     loop {
-        // Display the current state of the chocolate bar.
         println!("Current chocolate bar:");
         board.display();
 
         if player_turn {
-            // Ask the current player for a move.
             let (row, col) = get_player_move(&board);
 
-            // Check if the move is valid (e.g., square is not chomped).
             if board.chocolate_bar.contains(&(row, col)) {
                 board.chomper(row, col);
             } else {
@@ -34,7 +25,6 @@ fn main() {
                 continue;
             }
         } else {
-            //computer turn
             println!("The computer is thinking...");
             thread::sleep(time::Duration::from_secs(2)); // Pause for 2 seconds
 
@@ -43,7 +33,6 @@ fn main() {
                     board.chomper(row, col);
                 }
                 None => {
-                    // Find the most bottom-right square in the chocolate_bar
                     let bottom_right_square = board
                         .chocolate_bar
                         .iter()
@@ -51,9 +40,6 @@ fn main() {
 
                     if let Some(&(row, col)) = bottom_right_square {
                         board.chomper(row, col);
-                    } else {
-                        // Handle the case where there are no squares left to chomp
-                        // This might be an end-game scenario
                     }
                 }
             }
@@ -122,9 +108,6 @@ fn get_player_move(board: &Board) -> (usize, usize) {
         }
 
         let (row, col) = (coords[0], coords[1]);
-
-        // Implement validation logic to ensure the move is valid (e.g., square is not chomped).
-        // You can also add additional checks for the validity of the move.
 
         if board.chocolate_bar.contains(&(row, col)) {
             return (row, col);

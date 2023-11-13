@@ -107,10 +107,8 @@ mod tests {
 
     #[test]
     fn test_chomper() {
-        let mut board = Board::new(5, 5); // Assuming `new` creates a 5x5 board with all squares unchomped.
+        let mut board = Board::new(5, 5);
         board.chomper(3, 3);
-
-        // After chomping at (3, 3), squares (3, 3), (3, 4), (3, 5), (4, 3), (4, 4), (4, 5), (5, 3), (5, 4), and (5, 5) should be chomped.
         for r in 3..=5 {
             for c in 3..=5 {
                 assert!(!board.chocolate_bar.contains(&(r, c)), "Chomper failed at square ({}, {})", r, c);
@@ -120,11 +118,8 @@ mod tests {
 
     #[test]
     fn test_winning_move() {
-        let mut board = Board::new(2, 2); // A small board for simplicity.
+        let mut board = Board::new(2, 2);
         let winning_move = board.winning_move();
-
-        // Depending on your game logic, define what a winning move would be in this scenario.
-        // For a 2x2 board, the winning move might vary. Here's an example assertion:
         assert_eq!(winning_move, Some((2, 2)), "Winning move should be (2, 2)");
     }
 }

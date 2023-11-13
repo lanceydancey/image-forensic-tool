@@ -27,7 +27,15 @@ impl Board {
     }
 
     pub fn display(&self) {
+        // Display column headers
+        print!("  "); // Space for row numbers
+        for col in 1..=self.cols {
+            print!("{} ", col); // Display column number
+        }
+        println!();
+
         for row in 1..=self.rows {
+            print!("{} ", row); // Display row number
             for col in 1..=self.cols {
                 let symbol: char = if self.chocolate_bar.contains(&(row, col)) {
                     'X' // Represented by 'X' if not chomped
@@ -62,8 +70,8 @@ impl Board {
             return None; // No winning move if only the poisoned piece is left.
         }
 
-        for r in 0..self.rows {
-            for c in 0..self.cols {
+        for r in 1..=self.rows {
+            for c in 1..=self.cols {
                 if (r, c) == (1, 1) || !self.chocolate_bar.contains(&(r, c)) {
                     continue; // Skip the poisoned piece and squares not in the chocolate_bar.
                 }

@@ -109,7 +109,9 @@ fn get_player_move(board: &Board) -> (usize, usize) {
 
         let (row, col) = (coords[0], coords[1]);
 
-        if board.chocolate_bar.contains(&(row, col)) {
+        if (row, col) == (1, 1) {
+            println!("Don't eat the poisoned square!");
+        } else if board.chocolate_bar.contains(&(row, col)) {
             return (row, col);
         } else {
             println!("Invalid move. Please choose an unchomped square.");

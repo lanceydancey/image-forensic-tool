@@ -83,25 +83,25 @@ impl Board {
         }
     }
 
-/// Determines the winning move for the current state of the board, if one exists.
-///
-/// Uses negamax algorithm to find the best possible move by iterating over all possible moves.
-///
-/// # Returns
-///
-/// An `Option<(usize, usize)>` indicating the winning move. It returns `Some((row, col))`
-/// if a winning move is found, and `None` if there is no winning move.
-///
-/// # Examples
-///
-/// ```
-/// let mut board = Board::new(5, 5);
-/// if let Some((row, col)) = board.winning_move() {
-///     println!("Winning move: ({}, {})", row, col);
-/// } else {
-///     println!("No winning move available.");
-/// }
-/// ```
+    /// Determines the winning move for the current state of the board, if one exists.
+    ///
+    /// Uses negamax algorithm to find the best possible move by iterating over all possible moves.
+    ///
+    /// # Returns
+    ///
+    /// An `Option<(usize, usize)>` indicating the winning move. It returns `Some((row, col))`
+    /// if a winning move is found, and `None` if there is no winning move.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let mut board = Board::new(5, 5);
+    /// if let Some((row, col)) = board.winning_move() {
+    ///     println!("Winning move: ({}, {})", row, col);
+    /// } else {
+    ///     println!("No winning move available.");
+    /// }
+    /// ```
     pub fn winning_move(&mut self) -> Option<(usize, usize)> {
         if self.chocolate_bar.len() == 1 && self.chocolate_bar.contains(&(1, 1)) {
             return None;

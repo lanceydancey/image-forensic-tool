@@ -118,3 +118,4 @@ fn get_player_move(board: &Board) -> (usize, usize) {
         }
     }
 }
+

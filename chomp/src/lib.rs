@@ -26,13 +26,6 @@ impl Board {
     ///
     /// This function prints the board to the console with row and column numbers.
     /// Each square is represented by 'X' if it has not been chomped, or a space if it has.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let board = Board::new(5, 5);
-    /// board.display();
-    /// ```
     pub fn display(&self) {
         print!("  ");
         for col in 1..=self.cols {
@@ -61,14 +54,7 @@ impl Board {
     /// # Arguments
     ///
     /// * `row` - The row number of the square to chomp.
-    /// * `col` - The column number of the square to chomp.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let mut board = Board::new(5, 5);
-    /// board.chomper(3, 3);
-    /// ```    
+    /// * `col` - The column number of the square to chomp.    
     pub fn chomper(&mut self, row: usize, col: usize) {
         let mut squares_to_remove = HashSet::new();
 
@@ -91,17 +77,6 @@ impl Board {
     ///
     /// An `Option<(usize, usize)>` indicating the winning move. It returns `Some((row, col))`
     /// if a winning move is found, and `None` if there is no winning move.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let mut board = Board::new(5, 5);
-    /// if let Some((row, col)) = board.winning_move() {
-    ///     println!("Winning move: ({}, {})", row, col);
-    /// } else {
-    ///     println!("No winning move available.");
-    /// }
-    /// ```
     pub fn winning_move(&mut self) -> Option<(usize, usize)> {
         if self.chocolate_bar.len() == 1 && self.chocolate_bar.contains(&(1, 1)) {
             return None;
@@ -125,3 +100,32 @@ impl Board {
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_chomper() {
+        let mut board = Board::new(5, 5); // Assuming `new` creates a 5x5 board with all squares unchomped.
+        board.chomper(3, 3);
+
+        // After chomping at (3, 3), squares (3, 3), (3, 4), (3, 5), (4, 3), (4, 4), (4, 5), (5, 3), (5, 4), and (5, 5) should be chomped.
+        for r in 3..=5 {
+            for c in 3..=5 {
+                assert!(!board.chocolate_bar.contains(&(r, c)), "Chomper failed at square ({}, {})", r, c);
+            }
+        }
+    }
+
+    #[test]
+    fn test_winning_move() {
+        let mut board = Board::new(2, 2); // A small board for simplicity.
+        let winning_move = board.winning_move();
+
+        // Depending on your game logic, define what a winning move would be in this scenario.
+        // For a 2x2 board, the winning move might vary. Here's an example assertion:
+        assert_eq!(winning_move, Some((2, 2)), "Winning move should be (2, 2)");
+    }
+}
+

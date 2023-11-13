@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 // Define the Board struct as a HashSet of tuples representing the chocolate bar.
+#[derive(Clone)]
 pub struct Board {
     pub chocolate_bar: HashSet<(usize, usize)>,
     pub rows: usize,
@@ -54,5 +55,30 @@ impl Board {
         for square in &squares_to_remove {
             self.chocolate_bar.remove(square);
         }
+    }
+
+    pub fn winning_move(&mut self) -> Option<(usize, usize)> {
+        if self.chocolate_bar.len() == 1 && self.chocolate_bar.contains(&(1, 1)) {
+            return None; // No winning move if only the poisoned piece is left.
+        }
+
+        for r in 0..self.rows {
+            for c in 0..self.cols {
+                if (r, c) == (1, 1) || !self.chocolate_bar.contains(&(r, c)) {
+                    continue; // Skip the poisoned piece and squares not in the chocolate_bar.
+                }
+
+                // Clone `self` into a mutable variable.
+                let mut new_board = self.clone();
+                new_board.chomper(r, c);
+
+                // Recursively call winning_move on the mutable clone.
+                if new_board.winning_move().is_none() {
+                    return Some((r, c)); // This move is a winning move.
+                }
+            }
+        }
+
+        None // No winning move found.
     }
 }

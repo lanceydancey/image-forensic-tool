@@ -69,7 +69,7 @@ fn get_board_size_from_user() -> (usize, usize) {
 
         let dimensions: Vec<usize> = input
             .split_whitespace()
-            .filter_map(|s| s.parse().ok())
+            .filter_map(|s: &str| s.parse().ok())
             .collect();
 
         if dimensions.len() != 2 {

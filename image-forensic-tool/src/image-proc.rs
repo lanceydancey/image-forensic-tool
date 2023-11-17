@@ -10,7 +10,7 @@ use std::path::Path;
 struct ImageData {
     filename: String,
     date_created: Option<String>,
-    gps_coordinates: Option<(f64, f64)>,
+    gps_coordinates: Option<String>,
 }
 
 fn main() {

@@ -30,9 +30,6 @@ fn main() {
     }
 }
 
-//fn process_images(path: &Path) {
-//read exif data, create struct objects, write jsons out to file
-//  }
 fn read_exif_data<P: AsRef<Path>>(file_path: P) -> Result<Exif, String> {
     let exif = open_file(file_path)?;
 
@@ -58,15 +55,12 @@ fn read_exif_data<P: AsRef<Path>>(file_path: P) -> Result<Exif, String> {
 }
 
 fn open_file<P: AsRef<Path>>(file_path: P) -> Result<Exif, String> {
-    // Open the file
     let mut file = File::open(file_path).map_err(|e| format!("Failed to open file: {}", e))?;
 
-    // Read the file into a byte buffer
     let mut buf = Vec::new();
     file.read_to_end(&mut buf)
         .map_err(|e| format!("Failed to read file: {}", e))?;
 
-    // Parse the EXIF data
     Reader::new()
         .read_from_container(&mut std::io::Cursor::new(&buf))
         .map_err(|e| format!("Failed to read EXIF data: {}", e))

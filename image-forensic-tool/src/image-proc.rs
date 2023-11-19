@@ -1,10 +1,10 @@
-use serde::{Deserialize, Serialize};
-//use clap::{Command, Arg};
 use exif::{Exif, In, Reader, Tag, Value};
+use serde::{Deserialize, Serialize};
 use std::env;
+use std::fs;
 use std::fs::File;
 use std::io::Read;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct ImageData {
@@ -22,11 +22,10 @@ fn main() {
     }
 
     let folder_path = &args[1];
+    println!("Processing folder: {}", folder_path);
 
-    println!("Folder path: {}", folder_path);
-
-    if let Err(e) = read_exif_data(folder_path) {
-        eprintln!("Error reading EXIF data: {}", e);
+    if let Err(e) = process_images(folder_path) {
+        eprintln!("Error processing images: {}", e);
     }
 }
 
@@ -131,5 +130,34 @@ fn format_gps_data(rational: &Vec<exif::Rational>, ref_value: &str) -> Option<St
         ))
     } else {
         None
+    }
+}
+
+fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
+    let paths = fs::read_dir(folder_path).map_err(|e| e.to_string())?;
+
+    for path in paths {
+        let path = path.map_err(|e| e.to_string())?.path();
+        if image_check(&path) {
+            println!("Processing file: {}", path.display());
+            if let Err(e) = read_exif_data(&path) {
+                eprintln!("Error reading EXIF data: {}", e);
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn image_check(path: &Path) -> bool {
+    match path.extension().and_then(std::ffi::OsStr::to_str) {
+        Some(ext) => {
+            ext.eq_ignore_ascii_case("jpg") ||
+            ext.eq_ignore_ascii_case("jpeg") ||
+            ext.eq_ignore_ascii_case("tiff") ||
+            ext.eq_ignore_ascii_case("tif") ||  // TIFF files can have .tif extension as well
+            ext.eq_ignore_ascii_case("png")
+        }
+        None => false,
     }
 }

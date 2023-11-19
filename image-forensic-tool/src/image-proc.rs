@@ -28,120 +28,102 @@ fn main() {
     if let Err(e) = read_exif_data(folder_path) {
         eprintln!("Error reading EXIF data: {}", e);
     }
-
-    /*let matches = Command::new("Image EXIF Reader")
-        .version("1.0")
-        .about("Reads EXIF data from images")
-        .arg(Arg::new("path")
-             .value_name("PATH")
-             .help("Sets the path to the folder of images")
-             .required(true)
-             .index(1))
-        .get_matches();
-    */
-
-    //let folder_path: String = matches.get_one::<T>("path").unwrap().to_string();
-
-    //println!("Folder path: {}", folder_path);
-
-    //process_images(Path::new(folder_path));
 }
 
 //fn process_images(path: &Path) {
 //read exif data, create struct objects, write jsons out to file
 //  }
 fn read_exif_data<P: AsRef<Path>>(file_path: P) -> Result<Exif, String> {
-    //OPENER
-    let mut file = match File::open(file_path) {
-        Ok(file) => file,
-        Err(e) => return Err(format!("Failed to open file: {}", e)),
-    };
+    let exif = open_file(file_path)?;
 
-    //READER
-    let mut buf = Vec::new();
-    if let Err(e) = file.read_to_end(&mut buf) {
-        return Err(format!("Failed to read file: {}", e));
-    }
-
-    //PARSER
-    let exif = match Reader::new().read_from_container(&mut std::io::Cursor::new(&buf)) {
-        Ok(exif) => exif,
-        Err(e) => return Err(format!("Failed to read EXIF data: {}", e)),
-    };
-
-    println!("Successfully read EXIF data from the file.");
-
-    //DATETIME
-    if let Some(field) = exif.get_field(Tag::DateTimeOriginal, In::PRIMARY) {
-        match field.value {
-            Value::Ascii(ref vec) if !vec.is_empty() => {
-                if let Ok(datetime) = std::str::from_utf8(&vec[0]) {
-                    println!("DateTimeOriginal: {}", datetime);
-                }
-            }
-            _ => println!("DateTimeOriginal tag found, but couldn't read the value."),
-        }
+    if let Some(datetime) = get_date_time(&exif) {
+        println!("DateTimeOriginal: {}", datetime);
     } else {
         println!("DateTimeOriginal tag is missing.");
     }
-    //LATITUDE
-    let latitude = if let Some(field) = exif.get_field(Tag::GPSLatitude, In::PRIMARY) {
-        if let Value::Rational(lat_values) = &field.value {
-            Some(lat_values.clone())
-        } else {
-            None
-        }
-    } else {
-        None
-    };
 
-    let lat_ref = if let Some(field) = exif.get_field(Tag::GPSLatitudeRef, In::PRIMARY) {
-        if let Value::Ascii(ref vec) = field.value {
-            std::str::from_utf8(&vec[0]).ok()
-        } else {
-            None
-        }
-    } else {
-        None
-    };
-
-    if let (Some(lat), Some(lat_ref)) = (latitude, lat_ref) {
-        if let Some(lat_formatted) = format_gps_data(&lat, lat_ref) {
-            println!("Latitude: {}", lat_formatted);
-        }
+    if let Some(latitude) = get_latitude(&exif) {
+        println!("Latitude: {}", latitude);
     } else {
         println!("GPSLatitude or GPSLatitudeRef tag is missing.");
     }
-    //LONGITUDE
-    let longitude = if let Some(field) = exif.get_field(Tag::GPSLongitude, In::PRIMARY) {
-        if let Value::Rational(lon_values) = &field.value {
-            Some(lon_values.clone())
-        } else {
-            None
-        }
-    } else {
-        None
-    };
 
-    let lon_ref = if let Some(field) = exif.get_field(Tag::GPSLongitudeRef, In::PRIMARY) {
-        if let Value::Ascii(ref vec) = field.value {
-            std::str::from_utf8(&vec[0]).ok()
-        } else {
-            None
-        }
-    } else {
-        None
-    };
-
-    if let (Some(lon), Some(lon_ref)) = (longitude, lon_ref) {
-        if let Some(lon_formatted) = format_gps_data(&lon, lon_ref) {
-            println!("Longitude: {}", lon_formatted);
-        }
+    if let Some(longitude) = get_longitude(&exif) {
+        println!("Longitude: {}", longitude);
     } else {
         println!("GPSLongitude or GPSLongitudeRef tag is missing.");
     }
 
     Ok(exif)
+}
+
+fn open_file<P: AsRef<Path>>(file_path: P) -> Result<Exif, String> {
+    // Open the file
+    let mut file = File::open(file_path).map_err(|e| format!("Failed to open file: {}", e))?;
+
+    // Read the file into a byte buffer
+    let mut buf = Vec::new();
+    file.read_to_end(&mut buf)
+        .map_err(|e| format!("Failed to read file: {}", e))?;
+
+    // Parse the EXIF data
+    Reader::new()
+        .read_from_container(&mut std::io::Cursor::new(&buf))
+        .map_err(|e| format!("Failed to read EXIF data: {}", e))
+}
+
+fn get_date_time(exif: &Exif) -> Option<String> {
+    exif.get_field(Tag::DateTimeOriginal, In::PRIMARY)
+        .and_then(|field| match field.value {
+            Value::Ascii(ref vec) if !vec.is_empty() => {
+                std::str::from_utf8(&vec[0]).ok().map(String::from)
+            }
+            _ => None,
+        })
+}
+
+fn get_latitude(exif: &Exif) -> Option<String> {
+    let latitude = exif
+        .get_field(Tag::GPSLatitude, In::PRIMARY)
+        .and_then(|field| match &field.value {
+            Value::Rational(lat_values) => Some(lat_values.clone()),
+            _ => None,
+        });
+
+    let lat_ref = exif
+        .get_field(Tag::GPSLatitudeRef, In::PRIMARY)
+        .and_then(|field| match field.value {
+            Value::Ascii(ref vec) => std::str::from_utf8(&vec[0]).ok(),
+            _ => None,
+        });
+
+    if let (Some(lat), Some(lat_ref)) = (latitude, lat_ref) {
+        format_gps_data(&lat, lat_ref)
+    } else {
+        None
+    }
+}
+
+fn get_longitude(exif: &Exif) -> Option<String> {
+    let longitude = exif
+        .get_field(Tag::GPSLongitude, In::PRIMARY)
+        .and_then(|field| match &field.value {
+            Value::Rational(lon_values) => Some(lon_values.clone()),
+            _ => None,
+        });
+
+    let lon_ref = exif
+        .get_field(Tag::GPSLongitudeRef, In::PRIMARY)
+        .and_then(|field| match field.value {
+            Value::Ascii(ref vec) => std::str::from_utf8(&vec[0]).ok(),
+            _ => None,
+        });
+
+    if let (Some(lon), Some(lon_ref)) = (longitude, lon_ref) {
+        format_gps_data(&lon, lon_ref)
+    } else {
+        None
+    }
 }
 
 fn format_gps_data(rational: &Vec<exif::Rational>, ref_value: &str) -> Option<String> {

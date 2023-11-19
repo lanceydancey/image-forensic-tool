@@ -4,7 +4,7 @@ use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::Read;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct ImageData {
@@ -29,28 +29,19 @@ fn main() {
     }
 }
 
-fn read_exif_data<P: AsRef<Path>>(file_path: P) -> Result<Exif, String> {
-    let exif = open_file(file_path)?;
+fn read_exif_data<P: AsRef<Path>>(file_path: P) -> Result<ImageData, String> {
+    let path = file_path.as_ref();
+    let exif = open_file(path)?;
 
-    if let Some(datetime) = get_date_time(&exif) {
-        println!("DateTimeOriginal: {}", datetime);
-    } else {
-        println!("DateTimeOriginal tag is missing.");
-    }
+    let date_created = get_date_time(&exif);
+    let gps_coordinates = get_latitude(&exif)
+        .and_then(|lat| get_longitude(&exif).map(|lon| format!("{}, {}", lat, lon)));
 
-    if let Some(latitude) = get_latitude(&exif) {
-        println!("Latitude: {}", latitude);
-    } else {
-        println!("GPSLatitude or GPSLatitudeRef tag is missing.");
-    }
-
-    if let Some(longitude) = get_longitude(&exif) {
-        println!("Longitude: {}", longitude);
-    } else {
-        println!("GPSLongitude or GPSLongitudeRef tag is missing.");
-    }
-
-    Ok(exif)
+    Ok(ImageData {
+        filename: path.file_name().unwrap().to_string_lossy().into_owned(),
+        date_created,
+        gps_coordinates,
+    })
 }
 
 fn open_file<P: AsRef<Path>>(file_path: P) -> Result<Exif, String> {
@@ -136,15 +127,21 @@ fn format_gps_data(rational: &Vec<exif::Rational>, ref_value: &str) -> Option<St
 fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
     let paths = fs::read_dir(folder_path).map_err(|e| e.to_string())?;
 
+    let mut images_data = Vec::new();
+
     for path in paths {
         let path = path.map_err(|e| e.to_string())?.path();
         if image_check(&path) {
-            println!("Processing file: {}", path.display());
-            if let Err(e) = read_exif_data(&path) {
-                eprintln!("Error reading EXIF data: {}", e);
+            match read_exif_data(&path) {
+                Ok(data) => images_data.push(data),
+                Err(e) => eprintln!("Error reading EXIF data: {}", e),
             }
         }
     }
+
+    let json = serde_json::to_string_pretty(&images_data).map_err(|e| e.to_string())?;
+
+    fs::write("output.json", json).map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -152,11 +149,11 @@ fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
 fn image_check(path: &Path) -> bool {
     match path.extension().and_then(std::ffi::OsStr::to_str) {
         Some(ext) => {
-            ext.eq_ignore_ascii_case("jpg") ||
-            ext.eq_ignore_ascii_case("jpeg") ||
-            ext.eq_ignore_ascii_case("tiff") ||
-            ext.eq_ignore_ascii_case("tif") ||  // TIFF files can have .tif extension as well
-            ext.eq_ignore_ascii_case("png")
+            ext.eq_ignore_ascii_case("jpg")
+                || ext.eq_ignore_ascii_case("jpeg")
+                || ext.eq_ignore_ascii_case("tiff")
+                || ext.eq_ignore_ascii_case("tif")
+                || ext.eq_ignore_ascii_case("png")
         }
         None => false,
     }

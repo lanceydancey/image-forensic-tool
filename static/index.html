@@ -18,11 +18,12 @@
     <script>
         function initMap() {
             var map = new google.maps.Map(document.getElementById('map'), {
-                center: {lat: 45.52960, lng: -122.70298},
+                center: { lat: 45.52960, lng: -122.70298 },
                 zoom: 8
             });
 
             var imageData = JSON.parse('{{ image_data | safe }}');
+            var counter = 1;
 
             imageData.forEach(function(image) {
                 if (image.gps_coordinates) {
@@ -31,8 +32,10 @@
                     new google.maps.Marker({
                         position: latLng,
                         map: map,
+                        label: { text: String(counter), color: "white" },
                         title: image.filename
                     });
+                    counter ++;
                 }
             });
         }

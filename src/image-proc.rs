@@ -29,6 +29,7 @@ fn main() {
     }
 }
 
+// https://github.com/kamadak/exif-rs/blob/master/examples/reading.rs
 fn read_exif_data<P: AsRef<Path>>(file_path: P) -> Result<ImageData, String> {
     let path: &Path = file_path.as_ref();
     let exif: Exif = open_file(path)?;
@@ -59,7 +60,7 @@ fn open_file<P: AsRef<Path>>(file_path: P) -> Result<Exif, String> {
 
 fn get_date_time(exif: &Exif) -> Option<String> {
     exif.get_field(Tag::DateTimeOriginal, In::PRIMARY)
-        .and_then(|field| match field.value {
+        .and_then(|field: &exif::Field| match field.value {
             Value::Ascii(ref vec) if !vec.is_empty() => {
                 std::str::from_utf8(&vec[0]).ok().map(String::from)
             }
@@ -121,10 +122,10 @@ fn format_gps_data(rational: &Vec<exif::Rational>, ref_value: &str) -> Option<St
         let corrected_decimal = match ref_value {
             "N" | "E" => decimal,
             "S" | "W" => -decimal,
-            _ => decimal, // Default case, though this should not normally occur
+            _ => decimal,
         };
 
-        Some(format!("{:.6}", corrected_decimal)) // 6 decimal places for precision
+        Some(format!("{:.6}", corrected_decimal))
     } else {
         None
     }
@@ -146,6 +147,8 @@ fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
         }
     }
 
+    images_data = image_sort(images_data);
+
     let json: String =
         serde_json::to_string_pretty(&images_data).map_err(|e: serde_json::Error| e.to_string())?;
 
@@ -154,6 +157,7 @@ fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
     Ok(())
 }
 
+// https://stackoverflow.com/questions/72392835/check-if-a-file-is-of-a-given-type
 fn image_check(path: &Path) -> bool {
     match path.extension().and_then(std::ffi::OsStr::to_str) {
         Some(ext) => {
@@ -165,4 +169,15 @@ fn image_check(path: &Path) -> bool {
         }
         None => false,
     }
+}
+
+// https://stackoverflow.com/questions/56105305/how-to-sort-a-vec-of-structs-by-a-string-field
+fn image_sort(mut images: Vec<ImageData>) -> Vec<ImageData> {
+    images.sort_by(|a: &ImageData, b: &ImageData| match (&a.date_created, &b.date_created) {
+        (Some(date_a), Some(date_b)) => date_a.cmp(date_b),
+        (Some(_), None) => std::cmp::Ordering::Greater,
+        (None, Some(_)) => std::cmp::Ordering::Less,
+        (None, None) => std::cmp::Ordering::Equal,
+    });
+    images
 }

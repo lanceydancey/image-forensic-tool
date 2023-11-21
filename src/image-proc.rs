@@ -131,7 +131,6 @@ fn format_gps_data(rational: &Vec<exif::Rational>, ref_value: &str) -> Option<St
 }
 
 fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
-
     let paths: fs::ReadDir =
         fs::read_dir(folder_path).map_err(|e: std::io::Error| e.to_string())?;
 
@@ -146,7 +145,6 @@ fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
             }
         }
     }
-
 
     let json: String =
         serde_json::to_string_pretty(&images_data).map_err(|e: serde_json::Error| e.to_string())?;

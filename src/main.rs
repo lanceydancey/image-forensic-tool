@@ -15,15 +15,15 @@ struct ImageData {
     date_created: Option<String>,
     gps_coordinates: Option<String>,
 }
- 
+
 #[get("/")]
 fn index(tera: &rocket::State<Tera>) -> RawHtml<String> {
     dotenv().ok();
     let image_data: Vec<ImageData> = import_images().expect("Failed to load image data");
 
-    let image_data_json = serde_json::to_string(&image_data)
-        .expect("Failed to serialize image data");
-    
+    let image_data_json =
+        serde_json::to_string(&image_data).expect("Failed to serialize image data");
+
     println!("Serialized Image Data JSON: {}", &image_data_json);
 
     let mut context: Context = Context::new();
@@ -48,13 +48,12 @@ fn rocket() -> _ {
         .manage(Tera::new("static/*.html").expect("Error loading templates"))
 }
 
-
 fn import_images() -> Result<Vec<ImageData>, String> {
     let data = fs::read_to_string("output.json").map_err(|e| e.to_string())?;
-    let images: Vec<ImageData> = serde_json::from_str(&data).map_err(|e: serde_json::Error| e.to_string())?;
+    let images: Vec<ImageData> =
+        serde_json::from_str(&data).map_err(|e: serde_json::Error| e.to_string())?;
 
     println!("Imported Images: {:?}", images);
 
     Ok(images)
 }
-

@@ -49,9 +49,9 @@ fn open_file<P: AsRef<Path>>(file_path: P) -> Result<Exif, String> {
         File::open(file_path).map_err(|e| format!("Failed to open file: {}", e))?;
 
     let mut buf: Vec<u8> = Vec::new();
+
     file.read_to_end(&mut buf)
         .map_err(|e| format!("Failed to read file: {}", e))?;
-
     Reader::new()
         .read_from_container(&mut std::io::Cursor::new(&buf))
         .map_err(|e| format!("Failed to read EXIF data: {}", e))
@@ -116,10 +116,8 @@ fn format_gps_data(rational: &Vec<exif::Rational>, ref_value: &str) -> Option<St
         let degrees = rational[0].num as f64 / rational[0].denom as f64;
         let minutes = rational[1].num as f64 / rational[1].denom as f64;
         let seconds = rational[2].num as f64 / rational[2].denom as f64;
-        // Convert to decimal format
         let decimal = degrees + (minutes / 60.0) + (seconds / 3600.0);
 
-        // Apply hemisphere correction
         let corrected_decimal = match ref_value {
             "N" | "E" => decimal,
             "S" | "W" => -decimal,
@@ -133,6 +131,7 @@ fn format_gps_data(rational: &Vec<exif::Rational>, ref_value: &str) -> Option<St
 }
 
 fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
+
     let paths: fs::ReadDir =
         fs::read_dir(folder_path).map_err(|e: std::io::Error| e.to_string())?;
 
@@ -147,6 +146,7 @@ fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
             }
         }
     }
+
 
     let json: String =
         serde_json::to_string_pretty(&images_data).map_err(|e: serde_json::Error| e.to_string())?;

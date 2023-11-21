@@ -21,6 +21,20 @@
                 center: {lat: 45.52960, lng: -122.70298},
                 zoom: 8
             });
+
+            var imageData = JSON.parse('{{ image_data | safe }}');
+
+            imageData.forEach(function(image) {
+                if (image.gps_coordinates) {
+                    var coords = image.gps_coordinates.split(", ");
+                    var latLng = new google.maps.LatLng(parseFloat(coords[0]), parseFloat(coords[1]));
+                    new google.maps.Marker({
+                        position: latLng,
+                        map: map,
+                        title: image.filename
+                    });
+                }
+            });
         }
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap"

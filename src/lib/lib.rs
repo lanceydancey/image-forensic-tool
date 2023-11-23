@@ -1,32 +1,15 @@
 use exif::{Exif, In, Reader, Tag, Value};
 use serde::{Deserialize, Serialize};
-use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
 #[derive(Serialize, Deserialize, Debug)]
-struct ImageData {
+pub struct ImageData {
     filename: String,
     date_created: Option<String>,
     gps_coordinates: Option<String>,
-}
-
-fn main() {
-    let args: Vec<String> = env::args().collect();
-
-    if args.len() < 2 {
-        eprintln!("Usage: program_name <path_to_folder>");
-        std::process::exit(1);
-    }
-
-    let folder_path: &String = &args[1];
-    println!("Processing folder: {}", folder_path);
-
-    if let Err(e) = process_images(folder_path) {
-        eprintln!("Error processing images: {}", e);
-    }
 }
 
 // https://github.com/kamadak/exif-rs/blob/master/examples/reading.rs
@@ -131,7 +114,7 @@ fn format_gps_data(rational: &Vec<exif::Rational>, ref_value: &str) -> Option<St
     }
 }
 
-fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
+pub fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
     let paths: fs::ReadDir =
         fs::read_dir(folder_path).map_err(|e: std::io::Error| e.to_string())?;
 
@@ -173,11 +156,13 @@ fn image_check(path: &Path) -> bool {
 
 // https://stackoverflow.com/questions/56105305/how-to-sort-a-vec-of-structs-by-a-string-field
 fn image_sort(mut images: Vec<ImageData>) -> Vec<ImageData> {
-    images.sort_by(|a: &ImageData, b: &ImageData| match (&a.date_created, &b.date_created) {
-        (Some(date_a), Some(date_b)) => date_a.cmp(date_b),
-        (Some(_), None) => std::cmp::Ordering::Greater,
-        (None, Some(_)) => std::cmp::Ordering::Less,
-        (None, None) => std::cmp::Ordering::Equal,
-    });
+    images.sort_by(
+        |a: &ImageData, b: &ImageData| match (&a.date_created, &b.date_created) {
+            (Some(date_a), Some(date_b)) => date_a.cmp(date_b),
+            (Some(_), None) => std::cmp::Ordering::Greater,
+            (None, Some(_)) => std::cmp::Ordering::Less,
+            (None, None) => std::cmp::Ordering::Equal,
+        },
+    );
     images
 }

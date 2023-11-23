@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate rocket;
+extern crate image_proc;
 
 use dotenv::dotenv;
 use rocket::fs::{relative, FileServer};
@@ -42,6 +43,8 @@ fn index(tera: &rocket::State<Tera>) -> RawHtml<String> {
 fn rocket() -> _ {
     dotenv().ok();
 
+    read_image();
+
     rocket::build()
         .mount("/", routes![index])
         .mount("/static", FileServer::from(relative!("static")))
@@ -56,4 +59,20 @@ fn import_images() -> Result<Vec<ImageData>, String> {
     println!("Imported Images: {:?}", images);
 
     Ok(images)
+}
+
+fn read_image() {
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() < 2 {
+        eprintln!("Usage: program_name <path_to_folder>");
+        std::process::exit(1);
+    }
+
+    let folder_path: &String = &args[1];
+    println!("Processing folder: {}", folder_path);
+
+    if let Err(e) = image_proc::process_images(folder_path) {
+        eprintln!("Error processing images: {}", e);
+    }
 }

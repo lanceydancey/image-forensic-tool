@@ -173,11 +173,13 @@ fn image_check(path: &Path) -> bool {
 
 // https://stackoverflow.com/questions/56105305/how-to-sort-a-vec-of-structs-by-a-string-field
 fn image_sort(mut images: Vec<ImageData>) -> Vec<ImageData> {
-    images.sort_by(|a: &ImageData, b: &ImageData| match (&a.date_created, &b.date_created) {
-        (Some(date_a), Some(date_b)) => date_a.cmp(date_b),
-        (Some(_), None) => std::cmp::Ordering::Greater,
-        (None, Some(_)) => std::cmp::Ordering::Less,
-        (None, None) => std::cmp::Ordering::Equal,
-    });
+    images.sort_by(
+        |a: &ImageData, b: &ImageData| match (&a.date_created, &b.date_created) {
+            (Some(date_a), Some(date_b)) => date_a.cmp(date_b),
+            (Some(_), None) => std::cmp::Ordering::Greater,
+            (None, Some(_)) => std::cmp::Ordering::Less,
+            (None, None) => std::cmp::Ordering::Equal,
+        },
+    );
     images
 }

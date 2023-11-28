@@ -17,6 +17,7 @@ struct ImageData {
     gps_coordinates: Option<String>,
 }
 
+//https://blog.logrocket.com/rust-web-apps-using-rocket-framework/
 #[get("/")]
 fn index(tera: &rocket::State<Tera>) -> RawHtml<String> {
     dotenv().ok();
@@ -33,6 +34,7 @@ fn index(tera: &rocket::State<Tera>) -> RawHtml<String> {
         &env::var("GOOGLE_MAPS_API_KEY").expect("API key not found"),
     );
     context.insert("image_data", &image_data_json);
+
     RawHtml(
         tera.render("index.html", &context)
             .expect("Template rendering failed"),

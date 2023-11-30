@@ -53,6 +53,9 @@ fn rocket() -> _ {
         .manage(Tera::new("static/*.html").expect("Error loading templates"))
 }
 
+/// Builds a Vec of ImageData objects from file
+/// 
+/// This function will read in from a json file and create a Vec of `ImageData` objects
 fn import_images() -> Result<Vec<ImageData>, String> {
     let data = fs::read_to_string("output.json").map_err(|e| e.to_string())?;
     let images: Vec<ImageData> =
@@ -63,6 +66,10 @@ fn import_images() -> Result<Vec<ImageData>, String> {
     Ok(images)
 }
 
+/// Takes in the folder path from the command line to read images from
+/// 
+/// This function takes in a folder path from the command line that is the absolute file path to the folder containing images that 
+/// the user wants to read from. It will call the `process_images()` function on the path and create the `output.json` file
 fn read_image() {
     let args: Vec<String> = env::args().collect();
 

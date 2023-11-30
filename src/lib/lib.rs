@@ -14,10 +14,10 @@ pub struct ImageData {
 
 // https://github.com/kamadak/exif-rs/blob/master/examples/reading.rs
 /// Reads the metadata from an image file and creates ImageData struct objects
-/// 
-/// This function takes in a path for an image object, reads the metadata using Exif, and construst ImageData objects which consist of 
+///
+/// This function takes in a path for an image object, reads the metadata using Exif, and construst ImageData objects which consist of
 /// `filename`, `date_created`, `gps_coordinates`
-/// 
+///
 /// # Argument
 /// * `file_path` - A reference to a path to an image file
 fn read_exif_data<P: AsRef<Path>>(file_path: P) -> Result<ImageData, String> {
@@ -160,10 +160,10 @@ fn format_gps_data(rational: &Vec<exif::Rational>, ref_value: &str) -> Option<St
 }
 
 /// Processes all images in a directory, extracts metadata and sorts them chronologically
-/// 
-/// This function reads through a directory for image files. For each image in the folder it extracts the metadata, creates an ImageData struct object, and adds it to a Vec. 
+///
+/// This function reads through a directory for image files. For each image in the folder it extracts the metadata, creates an ImageData struct object, and adds it to a Vec.
 /// The objects in the Vec are stringified into JSONs and written out to a file `output.json`
-/// 
+///
 /// # Argument
 /// * `folder_path` - a reference to a path pointing at a folder containing images
 pub fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
@@ -194,12 +194,12 @@ pub fn process_images<P: AsRef<Path>>(folder_path: P) -> Result<(), String> {
 
 // https://stackoverflow.com/questions/72392835/check-if-a-file-is-of-a-given-type
 /// Checks if the path belongs to a valid image format
-/// 
+///
 /// This function looks at the extension of the file and examines whether or not it is of an acceptable format.
 /// Currently supports jpg, jpeg, tiff, tif and png.
-/// 
+///
 /// # Argument
-/// 
+///
 /// * `path` - A reference to a Path
 fn image_check(path: &Path) -> bool {
     match path.extension().and_then(std::ffi::OsStr::to_str) {
@@ -215,10 +215,10 @@ fn image_check(path: &Path) -> bool {
 }
 
 // https://stackoverflow.com/questions/56105305/how-to-sort-a-vec-of-structs-by-a-string-field
-/// Sorts a Vec of ImageData struct objects chronologically. 
-/// 
+/// Sorts a Vec of ImageData struct objects chronologically.
+///
 /// This function takes in a Vec of ImageData objects, and sorts them by their date_created value, from oldest to newest.
-/// 
+///
 /// # Argument
 /// * `images` - A Vec of ImageData struct objects for sorting.
 fn image_sort(mut images: Vec<ImageData>) -> Vec<ImageData> {
@@ -231,4 +231,82 @@ fn image_sort(mut images: Vec<ImageData>) -> Vec<ImageData> {
         },
     );
     images
+}
+
+//lets add some tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn test_open_file_success() {
+        let file_path = Path::new("C:/Users/lance/Rust/images/beach.jpg");
+        let result = open_file(file_path);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_open_file_error() {
+        let file_path = Path::new("/error.jpg");
+        let result = open_file(file_path);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_read_exif_data_success() {
+        let file_path = Path::new("C:/Users/lance/Rust/images/beach.jpg");
+        let result = read_exif_data(file_path);
+
+        assert!(result.is_ok());
+        let data = result.unwrap();
+        assert_eq!(data.filename, "beach.jpg");
+        assert!(data.date_created.is_some());
+        assert!(data.gps_coordinates.is_some());
+    }
+
+    #[test]
+    fn test_image_check_supported() {
+        let supported_formats = vec!["jpg", "jpeg", "tiff", "tif", "png"];
+        for ext in supported_formats {
+            let file_name = format!("test.{}", ext);
+            let file_path = Path::new(&file_name);
+            assert!(image_check(file_path), "Failed for extension: {}", ext);
+        }
+    }
+
+    #[test]
+    fn test_image_check_unsupported() {
+        let supported_formats = vec!["txt", "mp3", "docx", "xlsx", "pdf"];
+        for ext in supported_formats {
+            let file_name = format!("test.{}", ext);
+            let file_path = Path::new(&file_name);
+            assert!(!image_check(file_path), "Failed for extension: {}", ext);
+        }
+    }
+
+    #[test]
+    fn test_process_images_success() {
+        let test_folder = Path::new("C:/Users/lance/Rust/images/");
+        let result = process_images(test_folder);
+
+        assert!(result.is_ok());
+
+        let image_number: usize = 5;
+
+        let output = fs::read_to_string("output.json").unwrap();
+        let images_data: Vec<ImageData> = serde_json::from_str(&output).unwrap();
+        assert_eq!(images_data.len(), image_number, "Unexpected number of images processed");
+
+        for image in &images_data {
+            match image.filename.as_str() {
+                "beach.jpg" => {
+                    assert_eq!(image.date_created, Some("2023:11:22 13:44:52".to_string()), "Date mismatch for beach.jpg");
+                    assert_eq!(image.gps_coordinates, Some("45.264581, -123.952972".to_string()), "GPS coordinates mismatch for beach.jpg");
+                }
+                _=> {}
+            }
+        }
+    }    
 }

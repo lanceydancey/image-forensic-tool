@@ -1,4 +1,5 @@
 # Image Mapper
+### By Lance Miller
 
 ## Background
 The purpose of this tool is to batch process a set of images into a forensic timeline. The tool pulls the metadata from the images analyzing creation date and geolocation data from the time the photo was taken. This data is exported in json format to a file labeled `output.json` in case the user wants a copy or to review the photos manually. The file is then read and data is used to add pin markers to a static Google map using the Google Maps API. Not all images possess the required data, so it will skip over those that do not during the mapping process. The map is launched to a static webpage using the Rocket framework and the Tera template engine. The pin markers on the map contain an integer indicating their order chronologically. This allows the user to track the location the photos were taken at over time.  
@@ -34,6 +35,20 @@ cargo run "<path_to_the_image_directory"
 localhost:8000
 ```
 - There you will see the map displayed with the pins marking the geolcation of the photos in chronological order
+
+## Testing
+Testing has been done to ensure that:
+- File paths are being read correctly
+- The supported image types function properly within the program
+- Metadata is gathered from images and properly stored into objects
+- The program can successfully read objects from a json file and recreate Image objects
+
+## Future Improvements
+- An interface that allows the user to select more than one folder to be analyzed
+- A better interface in general, be it command line or otherwise
+- Have the map automatically center on the first image in `output.json`
+- Perhaps the final iteration is a webapp or mobile app that people can point at files on their phone/computer and generate maps?
+
 
 
 

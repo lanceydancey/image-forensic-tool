@@ -233,8 +233,6 @@ fn image_sort(mut images: Vec<ImageData>) -> Vec<ImageData> {
     images
 }
 
-//lets add some tests
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -297,16 +295,28 @@ mod tests {
 
         let output = fs::read_to_string("output.json").unwrap();
         let images_data: Vec<ImageData> = serde_json::from_str(&output).unwrap();
-        assert_eq!(images_data.len(), image_number, "Unexpected number of images processed");
+        assert_eq!(
+            images_data.len(),
+            image_number,
+            "Unexpected number of images processed"
+        );
 
         for image in &images_data {
             match image.filename.as_str() {
                 "beach.jpg" => {
-                    assert_eq!(image.date_created, Some("2023:11:22 13:44:52".to_string()), "Date mismatch for beach.jpg");
-                    assert_eq!(image.gps_coordinates, Some("45.264581, -123.952972".to_string()), "GPS coordinates mismatch for beach.jpg");
+                    assert_eq!(
+                        image.date_created,
+                        Some("2023:11:22 13:44:52".to_string()),
+                        "Date mismatch for beach.jpg"
+                    );
+                    assert_eq!(
+                        image.gps_coordinates,
+                        Some("45.264581, -123.952972".to_string()),
+                        "GPS coordinates mismatch for beach.jpg"
+                    );
                 }
-                _=> {}
+                _ => {}
             }
         }
-    }    
+    }
 }

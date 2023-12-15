@@ -48,6 +48,7 @@ Testing has been done to ensure that:
 - A better interface in general, be it command line or otherwise
 - Have the map automatically center on the first image in `output.json`
 - Perhaps the final iteration is a webapp or mobile app that people can point at files on their phone/computer and generate maps?
+- Recurse down through directories
 
 
 
